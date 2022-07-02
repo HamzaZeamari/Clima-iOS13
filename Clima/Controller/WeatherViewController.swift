@@ -8,7 +8,10 @@
 
 import UIKit
 
-class WeatherViewController: UIViewController, UITextFieldDelegate {
+class WeatherViewController: UIViewController, UITextFieldDelegate, WeatherManagerDelegate {
+
+
+
 
     @IBOutlet weak var searchTextField: UITextField!
     @IBOutlet weak var conditionImageView: UIImageView!
@@ -20,6 +23,15 @@ class WeatherViewController: UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         searchTextField.delegate = self
+        weatherManager.delegate = self
+        // create the alert
+        let alert = UIAlertController(title: "My Title", message: "This is my message.", preferredStyle: .alert)
+
+        // add an action (button)
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
+
+        // show the alert
+        self.present(alert, animated: true, completion: nil)
     }
     @IBAction func searchPressed(_ sender: UIButton) {
         if(searchTextField.text != ""){
@@ -43,6 +55,7 @@ class WeatherViewController: UIViewController, UITextFieldDelegate {
             return false
         }
     }
+    
     func textFieldDidEndEditing(_ textField: UITextField) {
         if let city = searchTextField.text{
             weatherManager.fetchWeather(cityName: city)
@@ -50,7 +63,17 @@ class WeatherViewController: UIViewController, UITextFieldDelegate {
         
         searchTextField.text = ""
     }
-    
 
+    func didUpdateWeather(_ weatherManager: WeatherManager,weather: WeatherModel) {
+        DispatchQueue.main.async{
+            self.conditionImageView.image = UIImage(systemName: weather.conditionName)
+            self.cityLabel.text = weather.cityName
+            self.temperatureLabel.text = weather.temperatureString
+        }
+    }
+
+    func didFailWithError(error: Error) {
+        print(error)
+    }
 }
 
